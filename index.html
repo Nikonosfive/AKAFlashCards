@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AKA Flash Cards</title>
+  <style>
+    h1,
+    a {
+      color: #fff;
+    }
+
+    #overlay,
+    #cardListOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1000;
+      width: 100vw;
+      height: 100vh;
+      visibility: hidden;
+      opacity: 0;
+      background: rgba(0, 0, 0, 0.5);
+      transition: all 0.5s ease-out;
+    }
+
+    #overlay.overlay-on,
+    #cardListOverlay.overlay-on {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    .flex {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      align-content: center;
+    }
+
+    .overlay-inner {
+      padding: 20px 20px;
+      background-color: #27acd9;
+      text-align: center;
+      margin: 10px;
+      border-radius: 30px;
+      border: 1px solid #38bdfa;
+      box-shadow: 12px 12px 2px 1px rgba(0, 0, 0, 0.2);
+    }
+
+    .topmargin {
+      display: inline-block;
+      vertical-align: middle;
+      align-items: center;
+    }
+
+    .settings {
+      margin: 14px;
+      align-items: center;
+      vertical-align: middle;
+    }
+
+    button.button {
+      display: relative;
+      text-align: center;
+      vertical-align: middle;
+      text-decoration: none;
+      width: auto;
+      min-width: 60px;
+      margin: auto;
+      padding: 1.0rem 0.7rem;
+      font-weight: bold;
+      border: 2px solid #27acd9;
+      color: #27acd9;
+      border-radius: 50vh;
+      transition: 0.5s;
+    }
+
+    button.button:hover {
+      color: #fff;
+      background: #27acd9;
+      border: 2px solid #fff;
+    }
+
+    button.button-left {
+      display: relative;
+      text-align: center;
+      vertical-align: middle;
+      text-decoration: none;
+      width: auto;
+      min-width: 60px;
+      margin: auto;
+      padding: 1.0rem 0.7rem;
+      font-weight: bold;
+      border: 2px solid #27acd9;
+      color: #27acd9;
+      border-radius: 50vh 10vh 10vh 50vh;
+      transition: 0.5s;
+    }
+
+    button.button-left:hover {
+      color: #fff;
+      background: #27acd9;
+      border: 2px solid #fff;
+    }
+
+    button.button-right {
+      display: relative;
+      text-align: center;
+      vertical-align: middle;
+      text-decoration: none;
+      width: auto;
+      min-width: 60px;
+      margin: auto;
+      padding: 1.0rem 0.7rem;
+      font-weight: bold;
+      border: 2px solid #27acd9;
+      color: #27acd9;
+      border-radius: 10vh 50vh 50vh 10vh;
+      transition: 0.5s;
+    }
+
+    button.button-right:hover {
+      color: #fff;
+      background: #27acd9;
+      border: 2px solid #fff;
+    }
+
+    button.button-rev {
+      display: relative;
+      text-align: center;
+      vertical-align: middle;
+      text-decoration: none;
+      width: auto;
+      min-width: 60px;
+      margin: auto;
+      padding: 0.3rem 0.7rem;
+      font-weight: bold;
+      border: 2px solid white;
+      color: white;
+      background: #27acd9;
+      border-radius: 50vh;
+      transition: 0.5s;
+    }
+
+    button.button-rev:hover {
+      color: #27acd9;
+      background: white;
+      border: 2px solid #27acd9;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #27acd9;
+      padding: 10px;
+    }
+
+    #display {
+      font-size: 2em;
+      margin-top: 20px;
+      height: 60vh;
+      text-align: center;
+      align-content: center;
+      padding: 20px;
+      overflow: scroll;
+      background-color: #fff;
+      border-radius: 50px;
+      cursor: pointer;
+    }
+
+    #display.element2 {
+      background-color: #f8d7da;
+    }
+
+    input,
+    select {
+      border-radius: 100vh;
+      padding: 4px;
+      padding-left: 15px;
+      border-color: #27acd9;
+      margin: 6px;
+      border: 1px solid #fff;
+    }
+
+    label {
+      color: #fff;
+      font-weight: 600;
+    }
+
+    #cardNumber {
+      color: #fff;
+      font-weight: bold;
+      font-size: 16px;
+      padding: 5px;
+      vertical-align: middle;
+      align-items: center;
+    }
+
+    #cardList {
+      max-height: 70vh;
+      overflow-y: auto;
+      text-align: left;
+      background-color: #fff;
+      border-radius: 20px;
+      padding: 10px;
+    }
+
+    #cardList table {
+      width: 100%;
+      border-collapse: collapse;
+      cursor: pointer;
+    }
+
+    #cardList table,
+    #cardList th,
+    #cardList td {
+      border: 1px solid #27acd9;
+    }
+
+    #cardList th,
+    #cardList td {
+      padding: 8px;
+      text-align: left;
+    }
+  </style>
+</head>
+
+<body>
+  <a><b>AKAフラッシュカード</b>　範囲：世界史一問一答　14章</a>
+  <div id="display"></div>
+  <div class="settings">
+    <span id="cardNumber"></span>
+    <button id="showSettingsButton" class="button-rev">設定</button>
+    <button id="showCardListButton" class="button-rev">一覧表示</button>
+  </div>
+  <center>
+    <br>
+    <button id="startButton" class="button">▶</button>
+    <button id="pauseButton" class="button">一時停止</button>
+    <button id="prevButton" class="button-left">戻る</button>
+    <button id="nextButton" class="button-right">進む</button>
+    <br>
+  </center>
+  <div id="overlay">
+    <div class="flex">
+      <div class="overlay-inner">
+        <label for="interval1" class="topmargin">表の表示時間（秒）</label>
+        <input type="number" id="interval1" value="1.5">
+        <br>
+        <label for="interval2">裏の表示時間（秒）</label>
+        <input type="number" id="interval2" value="1.5">
+        <br>
+        <label for="order">並べ替え</label>
+        <select id="order">
+          <option value="sequential">番号順</option>
+          <option value="random">ランダム</option>
+        </select>
+        <br><br>
+        <button id="closeSettingsButton" class="button" type="button">✕</button>
+      </div>
+    </div>
+  </div>
+  <div id="cardListOverlay">
+    <div class="flex">
+      <div class="overlay-inner">
+        <div id="cardList"></div>
+        <br>
+        <button id="closeCardListButton" class="button" type="button">✕</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const overlay = document.getElementById('overlay');
+      const cardListOverlay = document.getElementById('cardListOverlay');
+      document.getElementById('showSettingsButton').addEventListener('click', function() {
+        overlay.classList.add('overlay-on');
+      });
+      document.getElementById('closeSettingsButton').addEventListener('click', function() {
+        overlay.classList.remove('overlay-on');
+      });
+      document.getElementById('showCardListButton').addEventListener('click', function() {
+        cardListOverlay.classList.add('overlay-on');
+        displayCardList();
+      });
+      document.getElementById('closeCardListButton').addEventListener('click', function() {
+        cardListOverlay.classList.remove('overlay-on');
+      });
+      displayCurrentElement(); // ページ読み込み時に最初のカードを表示
+    });
+    const csvString = `1,クシャトリヤ出身でカースト制度を否定した仏教を創始し釈迦牟尼の尊称で呼ばれる人物,ガウダマ＝シッダールタ
+2,クシャトリヤ出身でカースト制度のジャイナ教を創始しマハーヴィーラの尊称がある人物,ヴァルダマーナ
+3,菩薩信仰を奉じ衆生救済を目的とした大乗仏教を大成した人物（龍樹とも呼ばれる）,ナーガールジュナ
+4,グプタ朝期に往路は陸路で復路は海路で東晋まで行き「仏国記」を残した僧,法顕
+5,ヴァルダナ朝時代に往復ともに陸路で唐まで行き「大唐西域記」を残した僧,玄奘
+6,ラージブート時代に往復とも海路で唐まで行き「南海寄帰内法伝」を残した僧,義浄
+7,アレクサンドロス大王の侵入後のインドで初の統一国家であるマウリヤ朝を築いた王,チャンドラグプタ
+8,マウリヤ朝の最盛期にダルマを尊んだほか他全国に磨崖仏を築き仏典結集も実施した王,アショーカ
+9,大月氏から自立し西北インド〜中央アジアを支配したクシャーナ朝の最盛期の王,カニシカ
+10,グプタ朝を開始した王,チャンドラグプタ一世
+11,グプタ朝の最盛期でインド古典文化の黄金期を築いた王,チャンドラグプタ二世
+12,サンスクリット語による戯曲シャクンタラーを著した人物,カーリダーサ
+13,インドの分裂時代直前に短命のヴァルダナ朝を創始した王,ハルシャ＝ヴァルダナ
+14,春秋戦国時代の覇者の一人で斉王,桓公
+15,春秋戦国時代の覇者の一人で晋王,文公
+16,儒家の祖で仁を重要視し弟子による言行録「論語」が残る人物,孔子
+17,儒家で孔子の弟子二名（〇〇と〇〇の形式で五十音順）,荀子と孟子
+18,道家で無為自然に基づく生き方を説いた人物二名（〇〇と〇〇の形式で五十音順）,荘子と老子
+19,無差別の愛である兼愛と戦争を否定する非攻を説いた人物,墨子
+20,法家で秦の孝公に使え変法を実施した人物,商鞅
+21,法家で始皇帝の丞相となった人物（〇〇と〇〇の形式で五十音順）,韓非と李斯
+22,縦横家で合従策を唱えた人物,蘇秦
+23,縦横家で連衡策を唱えた人物,張儀
+24,陰陽家で陰陽五行説を唱えた人物,鄒衍
+25,中国を統一し始皇帝を名乗り全国に郡県制を敷いた秦の王,政
+26,始皇帝の死後発生した中国史上初の大規模農民反乱の首謀者（乱の名前順に〇〇と〇〇）,陳勝と呉広
+27,秦の滅亡後権勢を誇ったが前202年劉邦に破れた人物,項羽
+28,通称高祖と呼ばれ長安を首都として漢を建国し郡国制を施行した初代皇帝,劉邦
+29,匈奴の最盛期を現出し漢を破った君主,冒頓単于
+30,積極的な体外作で最大領域を現出したが郷挙里選で豪族の中央進出を招いた漢の皇帝,武帝
+31,武帝に儒学の官学化を進言した儒家,董仲舒
+32,武帝の命で匈奴を挟撃するために大月氏に派遣され西域事情を明らかにした人物,張騫
+33,後8年に漢の帝位を奪い新を立てたが復古主義政策への反発にあった人物,王莽
+34,赤眉の乱の平定後都を洛陽に移し後漢を建て倭人と朝貢関係も結んだ皇帝（名は劉秀）,光武帝
+35,西域都護となり多くのオアシス都市を服従させた人物,班超
+36,班超の命でローマに派遣された人物,甘英
+37,後漢に訪れたローマ皇帝の使者が使えているとした皇帝・大秦王安敦をカタカナで,マルクス＝アウレリウス＝アントニヌス
+38,184年に太平道を指導して黄巾の乱を起こし後漢を滅亡に追いやった人物,張角
+39,五経の字句解釈を目的とする訓詁学を大成した後漢の学者,鄭玄
+40,後漢末に後に太平道と合わさって道教となる五斗米道（天師道）を四川で創始した人物,張陵
+41,「史記」で黄帝から武帝に至る通史を紀伝体で著した前漢の歴史家,司馬遷
+42,前漢から新に至るまでを「漢書」に紀伝体で著した後漢の人物,班固
+43,製紙法を改良した後漢の宦官,蔡倫`;
+
+    function parseCSV(csv) {
+      const lines = csv.split('\n');
+      const result = [];
+      for (const line of lines) {
+        const values = line.split(',');
+        if (values.length >= 3) {
+          result.push({
+            id: values[0],
+            question: values[1],
+            answer: values[2]
+          });
+        }
+      }
+      return result;
+    }
+    const elements = parseCSV(csvString);
+    const display = document.getElementById('display');
+    const cardNumber = document.getElementById('cardNumber');
+    let currentIndex = 0;
+    let interval1 = 1500;
+    let interval2 = 1500;
+    let order = 'sequential';
+    let isPaused = true;
+    let intervalId;
+    let showingElement2 = false;
+
+    function displayElement(element) {
+      display.textContent = element.question;
+      display.classList.remove('element2');
+      cardNumber.textContent = `カード番号：${element.id}`;
+    }
+
+    function displayElement2(element) {
+      display.textContent = element.answer;
+      display.classList.add('element2');
+    }
+
+    function displayNextElement() {
+      currentIndex = (currentIndex + 1) % elements.length;
+      displayCurrentElement();
+    }
+
+    function displayPrevElement() {
+      currentIndex = (currentIndex - 1 + elements.length) % elements.length;
+      displayCurrentElement();
+    }
+
+    function displayCurrentElement() {
+      showingElement2 = false;
+      const element = elements[currentIndex];
+      displayElement(element);
+    }
+
+    function start() {
+      isPaused = false;
+      let currentInterval = interval1;
+      intervalId = setInterval(function() {
+        if (!showingElement2) {
+          const element = elements[currentIndex];
+          displayElement2(element);
+          showingElement2 = true;
+          currentInterval = interval2;
+        } else {
+          displayNextElement();
+          showingElement2 = false;
+          currentInterval = interval1;
+        }
+        clearInterval(intervalId);
+        intervalId = setInterval(arguments.callee, currentInterval);
+      }, currentInterval);
+    }
+
+    function pause() {
+      isPaused = true;
+      clearInterval(intervalId);
+    }
+    display.addEventListener('click', function() {
+      if (isPaused) {
+        if (!showingElement2) {
+          showingElement2 = true;
+          displayElement2(elements[currentIndex]);
+        } else {
+          displayNextElement();
+          showingElement2 = false;
+        }
+      }
+    });
+    document.getElementById('startButton').addEventListener('click', start);
+    document.getElementById('pauseButton').addEventListener('click', pause);
+    document.getElementById('prevButton').addEventListener('click', displayPrevElement);
+    document.getElementById('nextButton').addEventListener('click', displayNextElement);
+    document.getElementById('interval1').addEventListener('input', function(event) {
+      interval1 = event.target.value * 1000;
+    });
+    document.getElementById('interval2').addEventListener('input', function(event) {
+      interval2 = event.target.value * 1000;
+    });
+    document.getElementById('order').addEventListener('change', function(event) {
+      order = event.target.value;
+      if (order === 'random') {
+        shuffleArray(elements);
+      } else {
+        elements.sort((a, b) => a.id - b.id);
+      }
+      currentIndex = 0;
+      displayCurrentElement();
+    });
+
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    function displayCardList() {
+      const cardList = document.getElementById('cardList');
+      cardList.innerHTML = '';
+      const table = document.createElement('table');
+      const thead = document.createElement('thead');
+      const tbody = document.createElement('tbody');
+      const headerRow = document.createElement('tr');
+      const headerCell1 = document.createElement('th');
+      const headerCell2 = document.createElement('th');
+      const headerCell3 = document.createElement('th');
+      headerCell1.textContent = '番号';
+      headerCell2.textContent = '質問';
+      headerCell3.textContent = '答え';
+      headerRow.appendChild(headerCell1);
+      headerRow.appendChild(headerCell2);
+      headerRow.appendChild(headerCell3);
+      thead.appendChild(headerRow);
+      table.appendChild(thead);
+      elements.forEach((element, index) => {
+        const row = document.createElement('tr');
+        const cell1 = document.createElement('td');
+        const cell2 = document.createElement('td');
+        const cell3 = document.createElement('td');
+        cell1.textContent = element.id;
+        cell2.textContent = element.question;
+        cell3.textContent = element.answer;
+        row.appendChild(cell1);
+        row.appendChild(cell2);
+        row.appendChild(cell3);
+        row.addEventListener('click', function() {
+          currentIndex = index;
+          displayCurrentElement();
+          cardListOverlay.classList.remove('overlay-on');
+        });
+        tbody.appendChild(row);
+      });
+      table.appendChild(tbody);
+      cardList.appendChild(table);
+    }
+    document.addEventListener('keydown', function(event) {
+      if (event.key === ' ' || event.key === 'ArrowRight') {
+        if (isPaused) {
+          if (!showingElement2) {
+            showingElement2 = true;
+            displayElement2(elements[currentIndex]);
+          } else {
+            displayNextElement();
+            showingElement2 = false;
+          }
+        }
+      } else if (event.key === 'ArrowLeft') {
+        if (intervalId) clearInterval(intervalId);
+        displayPrevElement();
+      }
+    });
+  </script>
+</body>
+
+</html>
